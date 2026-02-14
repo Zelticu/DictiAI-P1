@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
-import hunspell
+from spellchecker import SpellChecker
 
 app = Flask(__name__)
-
-# Load dictionary (we’ll add files next)
-h = hunspell.HunSpell('en_US.dic', 'en_US.aff')
+spell = SpellChecker()
 
 @app.route('/check', methods=['POST'])
 def check_text():
@@ -20,7 +18,7 @@ def check_text():
         for word in words:
             clean_word = ''.join(filter(str.isalpha, word))
 
-            if clean_word and not h.spell(clean_word):
+            if clean_word and clean_word.lower() not in spell:
                 errors.append({
                     "line": i + 1,
                     "type": "Spelling",
@@ -28,6 +26,7 @@ def check_text():
                 })
 
     return jsonify({"errors": errors})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
