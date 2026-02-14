@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import hunspell
 import os
 import re
 
 app = Flask(__name__)
+CORS(app)  # Allow requests from GitHub Pages
 
 # Load Hunspell dictionary
 h = hunspell.HunSpell("en_US.dic", "en_US.aff")
+
+
+@app.route("/")
+def home():
+    return "Dicti backend running."
 
 
 @app.route("/check", methods=["POST"])
@@ -18,11 +25,10 @@ def check_text():
     errors = []
 
     for i, line in enumerate(lines):
-        # Extract words (letters only)
         words = re.findall(r"[A-Za-z']+", line)
 
         for word in words:
-            # Ignore capitalized proper nouns (optional but smart)
+            # Skip likely proper nouns (capitalized mid-sentence)
             if word[0].isupper() and word.lower() not in h:
                 continue
 
@@ -34,11 +40,6 @@ def check_text():
                 })
 
     return jsonify({"errors": errors})
-
-
-@app.route("/")
-def home():
-    return "Dicti backend running."
 
 
 if __name__ == "__main__":
