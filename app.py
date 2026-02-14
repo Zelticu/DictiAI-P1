@@ -5,9 +5,9 @@ import os
 import re
 
 app = Flask(__name__)
-CORS(app)  # Allow requests from GitHub Pages
+CORS(app)
 
-# Load Hunspell dictionary
+# Load dictionary
 h = hunspell.HunSpell("en_US.dic", "en_US.aff")
 
 
@@ -28,8 +28,8 @@ def check_text():
         words = re.findall(r"[A-Za-z']+", line)
 
         for word in words:
-            # Skip likely proper nouns (capitalized mid-sentence)
-            if word[0].isupper() and word.lower() not in h:
+            # Ignore likely proper nouns (capitalized and spelled correctly)
+            if word[0].isupper() and h.spell(word):
                 continue
 
             if not h.spell(word):
