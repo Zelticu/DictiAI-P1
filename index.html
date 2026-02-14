@@ -2,68 +2,70 @@
 <html>
 <head>
   <title>DICTI AI P1</title>
-  </head>
-<style>
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #121212;
-    color: #e5e5e5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 50px 20px;
-  }
 
-  h1 {
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-    letter-spacing: 1px;
-  }
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #121212;
+      color: #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px 20px;
+    }
 
-  textarea {
-    width: 80%;
-    max-width: 800px;
-    height: 180px;
-    padding: 14px;
-    font-size: 16px;
-    background: #2a2a2a;
-    color: #f5f5f5;
-    border: none;
-    border-radius: 8px;
-    resize: vertical;
-    outline: none;
-  }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
 
-  textarea::placeholder {
-    color: #9ca3af;
-  }
+    textarea {
+      width: 80%;
+      max-width: 800px;
+      height: 180px;
+      padding: 14px;
+      font-size: 16px;
+      background: #2a2a2a;
+      color: #f5f5f5;
+      border: none;
+      border-radius: 8px;
+      resize: vertical;
+      outline: none;
+    }
 
-  button {
-    margin-top: 15px;
-    padding: 10px 24px;
-    font-size: 15px;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
+    textarea::placeholder {
+      color: #9ca3af;
+    }
 
-  button:hover {
-    background: #2563eb;
-  }
+    button {
+      margin-top: 15px;
+      padding: 10px 24px;
+      font-size: 15px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-  #output {
-    margin-top: 25px;
-    width: 80%;
-    max-width: 800px;
-    background: #1f1f1f;
-    padding: 16px;
-    border-radius: 8px;
-    line-height: 1.6;
-  }
-</style>
-  <body>
+    button:hover {
+      background: #2563eb;
+    }
+
+    #output {
+      margin-top: 25px;
+      width: 80%;
+      max-width: 800px;
+      background: #1f1f1f;
+      padding: 16px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
 
 <h1>DICTI AI P1</h1>
 
@@ -75,22 +77,38 @@
 <script>
 function checkText() {
   const text = document.getElementById("text").value;
-  const lines = text.split("\n");
-  let result = "";
+  const output = document.getElementById("output");
 
-  lines.forEach((line, i) => {
-    if (!line) return;
-    if (line[0] === line[0].toLowerCase()) {
-      result += `Line ${i+1}: Capitalization → "${line}"<br>`;
+  fetch("https://dictiai-p1-1.onrender.com/check", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ text: text })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.errors || data.errors.length === 0) {
+      output.innerHTML = "✅ All good!";
+    } else {
+      output.innerHTML = data.errors.map(e =>
+        `Line ${e.line}: ${e.type} → "${e.word}"`
+      ).join("<br>");
     }
-    if (line.length < 4) {
-      result += `Line ${i+1}: Unclear → "${line}"<br>`;
-    }
+  })
+  .catch(err => {
+    output.innerHTML = "Server error. Backend may be waking up...";
+    console.error(err);
   });
-
-  document.getElementById("output").innerHTML =
-    result || "✅ All good!";
 }
+
+// Enter to submit, Shift+Enter for newline
+document.getElementById("text").addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    checkText();
+  }
+});
 </script>
 
 </body>
